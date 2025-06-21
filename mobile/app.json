@@ -1,22 +1,36 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
-    "version": "1.0.0",
+    "name": "sundayswallet",
+    "slug": "sundays-wallet",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pdominguez.sundayswallet",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "icon": "./assets/images/sundays-icon.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/sundays-icon.png",
+        "backgroundColor": "#ffffff",
+        "backgroundImage": "./assets/images/sundays-icon.png"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.pdominguez.sundayswallet",
+      "versionCode": 3
+    },
+    "submit": {
+      "production": {
+        "ios": {
+          "ascAppId": "6747622064"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +51,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fbbfcb7b-cd6c-4a38-bdea-f516b2448f04"
+      }
+    },
+    "owner": "pdominguez0998expo"
   }
 }
