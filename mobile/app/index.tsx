@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   Image,
-  ScrollView,
   Modal,
   TextInput,
   TouchableOpacity,
@@ -158,45 +157,50 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.logoWrap}>
-            <Image source={require('../assets/images/sundays-logo.png')} style={styles.logo} />
-            <View>
-              <Text style={styles.headerTitle}>SundaysCoins</Text>
-              <Text style={styles.headerSubtitle}>Tu wallet digital</Text>
+      <FlatList
+        data={mockTransactions}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        contentContainerStyle={styles.container}
+        ListHeaderComponent={
+          <>
+            <View style={styles.header}>
+              <View style={styles.logoWrap}>
+                <Image source={require('../assets/images/sundays-logo.png')} style={styles.logo} />
+                <View>
+                  <Text style={styles.headerTitle}>SundaysCoins</Text>
+                  <Text style={styles.headerSubtitle}>Tu wallet digital</Text>
+                </View>
+              </View>
+              <View style={styles.connectedWrap}>
+                <MaterialIcons name="wallet" size={20} color="#ec4899" />
+                <Text style={styles.connectedText}>Conectado</Text>
+              </View>
             </View>
-          </View>
-          <View style={styles.connectedWrap}>
-            <MaterialIcons name="wallet" size={20} color="#ec4899" />
-            <Text style={styles.connectedText}>Conectado</Text>
-          </View>
-        </View>
 
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Balance Total</Text>
-          <Text style={styles.balance}>{balance.toLocaleString()} SDY</Text>
-          <View style={styles.balanceUsdWrap}>
-            <MaterialIcons name="trending-up" size={14} color="white" />
-            <Text style={styles.balanceUsd}>≈ ${usdEquivalent} USD</Text>
-          </View>
-          <Text style={styles.balanceRate}>1 SDY = ${usdRate} USD</Text>
-        </View>
+            <View style={styles.balanceCard}>
+              <Text style={styles.balanceLabel}>Balance Total</Text>
+              <Text style={styles.balance}>{balance.toLocaleString()} SDY</Text>
+              <View style={styles.balanceUsdWrap}>
+                <MaterialIcons name="trending-up" size={14} color="white" />
+                <Text style={styles.balanceUsd}>≈ ${usdEquivalent} USD</Text>
+              </View>
+              <Text style={styles.balanceRate}>1 SDY = ${usdRate} USD</Text>
+            </View>
 
-        <Text style={styles.sectionTitle}>Transacciones Recientes</Text>
-        <FlatList
-          data={mockTransactions}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
+            <Text style={styles.sectionTitle}>Transacciones Recientes</Text>
+          </>
+        }
+        ListFooterComponent={
+          <TouchableOpacity style={styles.transferButton} onPress={handleOpenTransfer}>
+            <MaterialIcons name="send" size={20} color="white" />
+            <Text style={styles.transferButtonText}>Transferir</Text>
+          </TouchableOpacity>
+        }
+      />
 
-        <TouchableOpacity style={styles.transferButton} onPress={handleOpenTransfer}>
-          <MaterialIcons name="send" size={20} color="white" />
-          <Text style={styles.transferButtonText}>Transferir</Text>
-        </TouchableOpacity>
-
-        {/* Transfer Form Modal */}
+      {/* Transfer Form Modal */}
         <Modal visible={showTransferModal} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -301,8 +305,7 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
   );
 }
 
@@ -444,6 +447,7 @@ const styles = StyleSheet.create({
     gap: 6,
     backgroundColor: '#ec4899',
     paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
   },
   transferButtonText: {
@@ -490,6 +494,7 @@ const styles = StyleSheet.create({
   modalButton: {
     backgroundColor: '#ec4899',
     paddingVertical: 10,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 8,
@@ -503,6 +508,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     paddingVertical: 10,
+    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,
