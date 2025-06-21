@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sundays Wallet",
     "slug": "sundays-wallet",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mobile",
@@ -23,7 +23,7 @@
         "backgroundImage": "./assets/images/sundays-icon.png"
       },
       "package": "com.pdominguez.sundayswallet",
-      "versionCode": 3
+      "versionCode": 4
     },
     "submit": {
       "production": {
