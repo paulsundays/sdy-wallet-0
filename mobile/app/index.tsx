@@ -1,5 +1,17 @@
 import { useState } from 'react';
-import { SafeAreaView, View, Text, StyleSheet, FlatList, Image, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  ScrollView,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const mockTransactions = [
@@ -41,7 +53,58 @@ export default function HomeScreen() {
   const [balance] = useState(1247.83);
   const [usdRate] = useState(0.85);
 
+  const [transferAddress, setTransferAddress] = useState('');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [transferStatus, setTransferStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [errorMessage, setErrorMessage] = useState('');
+
   const usdEquivalent = (balance * usdRate).toFixed(2);
+
+  const handleOpenTransfer = () => {
+    setShowTransferModal(true);
+  };
+
+  const handleTransfer = () => {
+    if (transferAddress && transferAmount) {
+      setShowTransferModal(false);
+      setShowConfirmModal(true);
+    }
+  };
+
+  const confirmTransfer = async () => {
+    setShowConfirmModal(false);
+    setShowStatusModal(true);
+    setTransferStatus('loading');
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const success = Math.random() > 0.3;
+      if (success) {
+        setTransferStatus('success');
+        setTimeout(() => {
+          setTransferAddress('');
+          setTransferAmount('');
+        }, 1000);
+      } else {
+        setTransferStatus('error');
+        setErrorMessage(
+          'Error de red: No se pudo completar la transferencia. Intenta nuevamente.'
+        );
+      }
+    } catch (e) {
+      setTransferStatus('error');
+      setErrorMessage('Error inesperado. Por favor intenta nuevamente.');
+    }
+  };
+
+  const closeStatusModal = () => {
+    setShowStatusModal(false);
+    setTransferStatus('loading');
+    setErrorMessage('');
+  };
 
   const truncateAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`;
 
@@ -127,6 +190,117 @@ export default function HomeScreen() {
           renderItem={renderItem}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
+
+        <TouchableOpacity style={styles.transferButton} onPress={handleOpenTransfer}>
+          <MaterialIcons name="send" size={20} color="white" />
+          <Text style={styles.transferButtonText}>Transferir</Text>
+        </TouchableOpacity>
+
+        {/* Transfer Form Modal */}
+        <Modal visible={showTransferModal} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Transferir SundaysCoins</Text>
+
+              <TextInput
+                placeholder="Dirección del destinatario"
+                value={transferAddress}
+                onChangeText={setTransferAddress}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Cantidad (SDY)"
+                value={transferAmount}
+                onChangeText={setTransferAmount}
+                keyboardType="numeric"
+                style={styles.input}
+              />
+
+              <View style={styles.summaryBox}>
+                <Text style={styles.summaryText}>Cantidad: {transferAmount || '0'} SDY</Text>
+                <Text style={styles.summaryText}>Equivalente USD: ${transferAmount ? (Number.parseFloat(transferAmount) * usdRate).toFixed(2) : '0.00'}</Text>
+                <Text style={styles.summaryText}>Comisión: 0.01 SDY</Text>
+              </View>
+
+              <TouchableOpacity
+                style={[styles.modalButton, !transferAddress || !transferAmount ? styles.disabledButton : null]}
+                disabled={!transferAddress || !transferAmount}
+                onPress={handleTransfer}
+              >
+                <Text style={styles.modalButtonText}>Enviar Transferencia</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.cancelButton} onPress={() => setShowTransferModal(false)}>
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Confirm Modal */}
+        <Modal visible={showConfirmModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Confirmar Transferencia</Text>
+              <View style={styles.summaryBox}>
+                <Text style={styles.summaryText}>Destinatario: {truncateAddress(transferAddress)}</Text>
+                <Text style={styles.summaryText}>Cantidad: {transferAmount} SDY</Text>
+                <Text style={styles.summaryText}>Comisión: 0.01 SDY</Text>
+                <Text style={[styles.summaryText, { fontWeight: 'bold' }]}>Total: {(Number.parseFloat(transferAmount || '0') + 0.01).toFixed(2)} SDY</Text>
+              </View>
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => setShowConfirmModal(false)}>
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalButton} onPress={confirmTransfer}>
+                  <Text style={styles.modalButtonText}>Confirmar Envío</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Status Modal */}
+        <Modal visible={showStatusModal} transparent animationType="fade" onRequestClose={closeStatusModal}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              {transferStatus === 'loading' && (
+                <View style={{ alignItems: 'center' }}>
+                  <ActivityIndicator size="large" color="#ec4899" />
+                  <Text style={styles.modalTitle}>Procesando Transferencia</Text>
+                  <Text style={styles.statusTextDesc}>Tu transferencia está siendo procesada...</Text>
+                </View>
+              )}
+
+              {transferStatus === 'success' && (
+                <View style={{ alignItems: 'center' }}>
+                  <MaterialIcons name="check-circle" size={48} color="#16a34a" />
+                  <Text style={[styles.modalTitle, { color: '#16a34a' }]}>¡Transferencia Exitosa!</Text>
+                  <Text style={styles.statusTextDesc}>Tu transferencia de {transferAmount} SDY se envió correctamente.</Text>
+                  <TouchableOpacity style={styles.modalButton} onPress={closeStatusModal}>
+                    <Text style={styles.modalButtonText}>Continuar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {transferStatus === 'error' && (
+                <View style={{ alignItems: 'center' }}>
+                  <MaterialIcons name="error" size={48} color="#ef4444" />
+                  <Text style={[styles.modalTitle, { color: '#ef4444' }]}>Error en la Transferencia</Text>
+                  <Text style={styles.statusTextDesc}>{errorMessage}</Text>
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity style={styles.cancelButton} onPress={closeStatusModal}>
+                      <Text style={styles.cancelButtonText}>Cerrar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.modalButton} onPress={() => { closeStatusModal(); setTimeout(() => setShowConfirmModal(true), 100); }}>
+                      <Text style={styles.modalButtonText}>Reintentar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -261,5 +435,94 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 8,
+  },
+  transferButton: {
+    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#ec4899',
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  transferButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#fce7f3',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  summaryBox: {
+    backgroundColor: '#fdf2f8',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: '#334155',
+    marginBottom: 4,
+  },
+  modalButton: {
+    backgroundColor: '#ec4899',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  cancelButton: {
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    backgroundColor: 'white',
+    marginBottom: 8,
+  },
+  cancelButtonText: {
+    color: '#1e293b',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  statusTextDesc: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#475569',
+    textAlign: 'center',
+    marginBottom: 12,
   },
 });
