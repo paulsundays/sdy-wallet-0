@@ -3,9 +3,9 @@ import './globals.css'
 import Footer from '@/components/footer'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Sundays Wallet',
+  description: 'Sundays Wallet',
+  generator: 'paulsundays.com',
 }
 
 export default function RootLayout({
